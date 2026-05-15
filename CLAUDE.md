@@ -60,6 +60,7 @@ ForgeGradle は初回ビルドで `maven.minecraftforge.net` と `libraries.mine
 - ブロック追加 → `docs/05-ブロック追加.md`。コピー元は `src/.../registry/ModBlocks.java`
 - 新カテゴリ（エンチャント/エンティティ等）→ `docs/03-Modの基本.md` の DeferredRegister 節
 - 汎用レシピ（何を足す場合でも）→ `docs/09-機能追加ワークフロー.md`
+- バグ/エラーが出た → `docs/07`（症状→原因 早見表）→ 解決しなければ `docs/10-バグとエラー対応.md`（切り分け・調査・修正・報告の手順書）
 
 新規登録物には必ずセットで用意する: **登録コード / モデル JSON / lang（en_us と ja_jp）/ テクスチャ PNG**。
 ブロックはさらに **blockstate / loot_table**。1つでも欠けると紫黒テクスチャや無音ドロップになる（`docs/07`）。
