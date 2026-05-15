@@ -1,5 +1,6 @@
 {
   "item.examplemod.example_item": "サンプルアイテム",
+  "item.examplemod.example_sword": "サンプルソード",
   "block.examplemod.example_block": "サンプルブロック",
   "itemGroup.examplemod.example_tab": "サンプル Mod"
 }
