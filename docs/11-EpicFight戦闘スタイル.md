@@ -4,6 +4,9 @@
 **datapack 方式**を主軸にする（Java コード・コンパイル依存は不要）。
 具体例として、スキャフォールドに同梱した `example_sword` を使う。
 
+> まず §0（特に 0.2 Capability / 0.5 解決フロー）で**仕組みを理解**してから手順に入ると、
+> 効かないときの切り分け（§8）が早い。JSON をコピーするだけでなく「なぜ効くか」を掴む。
+
 ## 0. 前提と仕組み
 
 - 対象: **Epic Fight Forge 20.x（Minecraft 1.20.1）**。バージョンで JSON 細部が変わるため
@@ -13,6 +16,87 @@
 - 仕組み: Epic Fight は `data/<modid>/capabilities/weapons/<item登録名>.json` を読み、
   そのアイテムに **weapon type（＝戦闘スタイル/ムーブセット）** を付与する。
   この JSON は本 Mod の jar に同梱される「組み込み datapack」になる（手書きでよい）
+
+### 0.1 Epic Fight の二つのモード
+
+Epic Fight は通常 MC の戦闘とは別レイヤーで動く。プレイヤーは
+**戦闘モード（battle mode）/ 通常モード（mining mode）** を切替キー（既定 `R`・
+キーバインドで変更可）でトグルする。**weapon type のムーブセットは戦闘モード時に
+適用**される。通常モードでは普通の MC アイテムとして振る舞う（だから datapack が
+あってもバニラ動作と両立する）。これが「Epic Fight 無し/通常モードでも壊れない」理由。
+
+### 0.2 Capability システム（最重要の土台）
+
+Epic Fight は **capability** で「対象に戦闘データを後付け」する。2系統ある:
+
+| capability | 付与対象 | 何を持つか | datapack パス |
+|---|---|---|---|
+| **Item capability** | アイテム | weapon type（ムーブセット）・属性・コライダー・スタイル | `data/<modid>/capabilities/weapons/<登録名>.json` |
+| **Entity patch** | エンティティ | armature（骨格）・LivingMotion・スキル・combat behavior | API（`docs/12`）/ Mob Capabilities datapack |
+
+本書（datapack 方式）が触るのは **Item capability** のみ。武器JSONは
+「このアイテムを戦闘モードで持ったらどの weapon type で戦うか」を宣言するだけで、
+ムーブセットの中身（コンボ/アニメ）は **weapon type 側**が持つ。
+API 側 (`LivingEntityPatch` を `EpicFightCapabilities.getEntityPatch()` で取得して
+操作) は上級編 `docs/12` の領域。
+
+### 0.3 Armature とアニメーション（理解として）
+
+- **Armature** = エンティティの「骨格（スケルトン）」。アニメはこの骨格を動かす。
+  プレイヤーは biped armature。`isHumanoid` なエンティティは**持っている武器に
+  応じてモーションが変わる**（＝武器の weapon type が livingmotion を差し替える）。
+- **StaticAnimation**: 単発の決め打ちアニメ（攻撃・被弾・スキル等）。
+- **LivingMotion**: 状態（IDLE/WALK/RUN/JUMP…）に対応する持続モーション。
+  weapon type は「この武器を持つ間 WALK をこのモーションに差し替える」等を定義する。
+- **AttackAnimation / combo**: weapon type が持つ攻撃の連なり。左クリック連打で
+  コンボが進む。各攻撃に **collider（判定）** とダメージ係数が紐づく。
+
+→ つまり「剣を持つと構えと斬りが変わる」のは、item capability が weapon type を指し、
+その weapon type が armature 上の LivingMotion / AttackAnimation を上書きするから。
+
+### 0.4 Weapon Type と Style（片手/両手/騎乗）
+
+- **Weapon type** = ムーブセットの実体（`epicfight:sword` 等）。組込が多数あり、
+  別 Mod や Weapon Type Editor で独自定義もできる（§3 / §9）。
+- **Style**: 同じ武器でも持ち方で挙動が変わる軸。代表は **One Hand / Two Hand**
+  （＋騎乗 Mount）。オフハンドが空か・二刀かでスタイルが決まり、`attributes` の
+  `one_hand` / `two_hand` はこの軸別の数値（§1 STEP4）。スタイルごとに別コンボ・
+  別トレイル（残光）になることもある。
+
+### 0.5 datapack の解決フロー
+
+```
+アイテムを戦闘モードで装備
+  → Item capability JSON（本書が書く）を参照
+    → "type" の weapon type を解決（組込 or 他 Mod or 独自）
+      → スタイル判定（one/two hand）
+        → その weapon type の LivingMotion / コンボ / collider を armature に適用
+```
+
+- capabilities JSON は **datapack**。`/reload` で再読込される（jar 再ビルド不要で
+  数値調整を試せる。ただし weapon type の新規定義側は別途要件あり）。
+- `type` が無効/未ロードだと weapon type が解決されず**バニラ挙動のまま**になる
+  （クラッシュではなく「効かない」。§8 の切り分け）。
+
+### 0.6 Skill システム（datapack では触らないが理解として）
+
+Epic Fight の「スキル」は weapon capability とは別レイヤー。プレイヤーの
+**SkillContainer**（スロット: learned=武器付随 / special / passive 等）に乗り、
+ゲージやチャージ攻撃・受け（ガード）・回避として発動する。weapon type には
+**passive skill** やチャージ攻撃が紐づくことがある。datapack の武器JSONだけでは
+独自スキルは作れない（API 領域）。**敵にスキル/プレイヤー行動を転用する**のは
+`docs/12-EpicFight特異点ボス.md`（API 方式・実験的）を参照。
+
+### 0.7 本書のスコープと確証レベル（正直な線引き）
+
+- **確証済み（本書が保証）**: `data/<modid>/capabilities/weapons/<登録名>.json` の
+  配置規約、最小キー `type` / `attributes.common`(`armor_negation`/`impact`/
+  `max_strikes`) / `one_hand`・`two_hand`、JSON 静的検証（§4）。
+- **版依存（wiki が正典・§9 必読）**: 追加キー（collider 詳細・styles・各種 sound・
+  livingmotion 差し替え・trail 等）の正確な構文、組込 weapon type の増減、
+  Skill/API の名称。これらは Epic Fight の版で変わるため**断定しない**。
+- 本実行環境では Epic Fight 実機・ビルドは検証不可（§4 末尾）。静的正しさまでを保証。
+
 
 ## 1. 手順（example_sword を例に）
 
@@ -189,11 +273,20 @@ datapack 自体は依存不要だが、Epic Fight より後にロードさせた
 
 ## 9. 公式リファレンス（版ごとに必ず確認）
 
-- Epic Fight Wiki: `https://epicfight-docs.readthedocs.io/`
-  - Item Capability（武器 capabilities datapack の正典）
-  - Weapon Type Editor（戦闘スタイル一覧・カスタム weapon type）
-  - API（独自スキル/ムーブセット/アニメーションを自作する上級者向け。Forge 1.20.1 は
-    `EntityPatchRegistryEvent` を **MOD バス**・`@Mod.EventBusSubscriber(bus = MOD)` で登録）
+Epic Fight Wiki: `https://epicfight-docs.readthedocs.io/`（正典。版で内容が変わる）
+
+| ページ | 用途 |
+|---|---|
+| `Guides/Weapons/page1/`（Item Capability） | 武器 capabilities datapack の全キー・正典（§0.5/§1） |
+| `Guides/Weapons/page2/`（Weapon Type Editor） | 組込 weapon type 一覧・独自 weapon type 定義（§0.4/§3） |
+| `Guides/Weapons/page3/`（Custom Trails） | スタイル別の残光トレイル（§0.4） |
+| `Guides/Entities/page1/`（Custom entity datapack） | 敵を Epic Fight 化（armature/patch・§0.2） |
+| `Guides/Entities/page2/`（Mob Capabilities Editor） | mob の capability 編集（`docs/12` 関連） |
+| `API/Starting/`（Getting started） | `EpicFightCapabilities.getEntityPatch()` 等の API 入口 |
+
+- API（独自スキル/ムーブセット/アニメーションを自作する上級者向け）。Forge 1.20.1 は
+  `EntityPatchRegistryEvent` を **MOD バス**・`@Mod.EventBusSubscriber(bus = MOD)` で登録。
+- 読めないキー/型は**推測で書かず** wiki と Epic Fight 起動ログ（parse エラー）で確定する。
 
 本書は datapack 方式の確証済み最小構成を示す。`collider` 詳細や追加属性、
 組込スタイルの増減は **Epic Fight の版**で変わるため、上記 wiki を最終的な根拠とすること。
