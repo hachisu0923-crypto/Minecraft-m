@@ -78,6 +78,21 @@ public static final RegistryObject<Item> EXAMPLE_ITEM =
 3. `ExampleMod` コンストラクタで `ModXxx.REGISTER.register(modEventBus)` を追加
 4. 必要なアセット（モデル/lang/テクスチャ等）を `docs/06` のパス規約で用意
 
+## エンティティは「登録」だけでは足りない（重要）
+
+`DeferredRegister`（`ForgeRegistries.ENTITY_TYPES`）での EntityType 登録に**加えて**、
+次を **MOD バス**で別途登録しないと「属性なしクラッシュ」「透明（描画なし）」になる:
+
+| 追加で必要 | イベント（MOD バス） | 無いとどうなる |
+|---|---|---|
+| 属性（HP/攻撃力等） | `EntityAttributeCreationEvent` | スポーン時クラッシュ |
+| レンダラ（見た目） | `EntityRenderersEvent.RegisterRenderers`（クライアント専用） | 透明 / 描画クラッシュ |
+
+実例: `registry/ModEntities.java`（登録）/ `ExampleMod#onEntityAttributeCreation`
+（属性）/ `client/ClientSetup.java`（レンダラ）/ `entity/Singularity.java`（本体）。
+詳細・設計は `docs/12-EpicFight特異点ボス.md`。`LivingEntity` 系はスポーンエッグや
+`SpawnPlacements`（自然湧き）も別途必要になる。
+
 ## マッピングについて（任意）
 
 既定は official Mojang マッピング（`gradle.properties` の `mapping_channel=official`）。
