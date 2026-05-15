@@ -4,6 +4,7 @@ import com.example.examplemod.ExampleMod;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -23,6 +24,12 @@ public final class ModItems {
     public static final RegistryObject<Item> EXAMPLE_SWORD =
             REGISTER.register("example_sword",
                     () -> new SwordItem(Tiers.IRON, 3, -2.4F, new Item.Properties()));
+
+    // ボス「特異点」のスポーンエッグ。ForgeSpawnEggItem は EntityType を遅延参照する。
+    public static final RegistryObject<Item> SINGULARITY_SPAWN_EGG =
+            REGISTER.register("singularity_spawn_egg",
+                    () -> new ForgeSpawnEggItem(ModEntities.SINGULARITY, 0x1A0030, 0x9B30FF,
+                            new Item.Properties()));
 
     private ModItems() {
     }

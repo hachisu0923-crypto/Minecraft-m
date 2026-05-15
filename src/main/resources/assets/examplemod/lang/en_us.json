@@ -1,6 +1,8 @@
 {
   "item.examplemod.example_item": "Example Item",
   "item.examplemod.example_sword": "Example Sword",
+  "item.examplemod.singularity_spawn_egg": "Singularity Spawn Egg",
   "block.examplemod.example_block": "Example Block",
+  "entity.examplemod.singularity": "Singularity",
   "itemGroup.examplemod.example_tab": "Example Mod"
 }

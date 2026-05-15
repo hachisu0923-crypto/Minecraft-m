@@ -1,9 +1,12 @@
 package com.example.examplemod;
 
+import com.example.examplemod.entity.Singularity;
 import com.example.examplemod.registry.ModBlocks;
 import com.example.examplemod.registry.ModCreativeTabs;
+import com.example.examplemod.registry.ModEntities;
 import com.example.examplemod.registry.ModItems;
 import com.mojang.logging.LogUtils;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -24,7 +27,15 @@ public class ExampleMod {
         ModItems.REGISTER.register(modEventBus);
         ModBlocks.REGISTER.register(modEventBus);
         ModCreativeTabs.REGISTER.register(modEventBus);
+        ModEntities.REGISTER.register(modEventBus);
+
+        // エンティティ属性は EntityAttributeCreationEvent（MOD バス）で登録する
+        modEventBus.addListener(this::onEntityAttributeCreation);
 
         LOGGER.info("{} initialized", MOD_ID);
+    }
+
+    private void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
+        event.put(ModEntities.SINGULARITY.get(), Singularity.createAttributes().build());
     }
 }

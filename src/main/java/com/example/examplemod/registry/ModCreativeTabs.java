@@ -22,6 +22,7 @@ public final class ModCreativeTabs {
                     .displayItems((params, output) -> {
                         output.accept(ModItems.EXAMPLE_ITEM.get());
                         output.accept(ModItems.EXAMPLE_SWORD.get());
+                        output.accept(ModItems.SINGULARITY_SPAWN_EGG.get());
                         output.accept(ModBlocks.EXAMPLE_BLOCK_ITEM.get());
                     })
                     .build());

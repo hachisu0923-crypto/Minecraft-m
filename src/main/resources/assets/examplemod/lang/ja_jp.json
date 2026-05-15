@@ -1,6 +1,8 @@
 {
   "item.examplemod.example_item": "サンプルアイテム",
   "item.examplemod.example_sword": "サンプルソード",
+  "item.examplemod.singularity_spawn_egg": "特異点 スポーンエッグ",
   "block.examplemod.example_block": "サンプルブロック",
+  "entity.examplemod.singularity": "特異点",
   "itemGroup.examplemod.example_tab": "サンプル Mod"
 }

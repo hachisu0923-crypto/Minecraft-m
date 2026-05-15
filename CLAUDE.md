@@ -60,6 +60,7 @@ ForgeGradle は初回ビルドで `maven.minecraftforge.net` と `libraries.mine
 - ブロック追加 → `docs/05-ブロック追加.md`。コピー元は `src/.../registry/ModBlocks.java`
 - 新カテゴリ（エンチャント/エンティティ等）→ `docs/03-Modの基本.md` の DeferredRegister 節
 - 武器に Epic Fight 戦闘スタイルを付ける → `docs/11-EpicFight戦闘スタイル.md`（datapack 方式）
+- プレイヤー型強敵ボス（段階的に強くなる／Epic Fight・WoM のプレイヤー行動転用）→ `docs/12-EpicFight特異点ボス.md`（API 方式）
 - 汎用レシピ（何を足す場合でも）→ `docs/09-機能追加ワークフロー.md`
 - バグ/エラーが出た → `docs/07`（症状→原因 早見表）→ 解決しなければ `docs/10-バグとエラー対応.md`（切り分け・調査・修正・報告の手順書）
 

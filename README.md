@@ -38,6 +38,7 @@ Minecraft **1.20.1** / **Forge** 向けの最小構成 Mod。
 | `docs/09-機能追加ワークフロー.md` | 何を足すときも使える汎用レシピ |
 | `docs/10-バグとエラー対応.md` | バグ/エラーの切り分け・調査・修正・報告の手順書 |
 | `docs/11-EpicFight戦闘スタイル.md` | Epic Fight の戦闘スタイルを武器に割り当てる（datapack 方式） |
+| `docs/12-EpicFight特異点ボス.md` | 段階的に強くなるボス「特異点」+ Epic Fight/WoM のプレイヤー行動転用（API 方式） |
 
 ## ライセンス
 
