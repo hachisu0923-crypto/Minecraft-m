@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+
+# Forge / 実行ディレクトリ
+run/
+run-data/
+runs/
+src/generated/resources/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+eclipse/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ローカル maven publish 出力
+mcmodsrepo/
