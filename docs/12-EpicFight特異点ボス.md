@@ -128,6 +128,17 @@ dependencies {
 WoM は Epic Fight アドオン（武器11・スキル27・防具4等／mc1.20.1-forge）。
 **もう一段の任意ソフト依存**として追加（不在でもボスは動く）:
 
+> **互換性（最重要・実導入前に必ず確認）**
+> - **Epic Fight と WoM は「対応する版同士をペアで」揃える。** WoM は Epic Fight の
+>   ハード依存アドオンで、特定の Epic Fight API（`AnimationRegistryEvent` 等）を前提に
+>   ビルドされる。バラバラに最新を入れると**ロード不可/クラッシュ**する（既知事例多数）。
+> - Epic Fight 1.20.1 は **Forge 下限**を要求する（直近版は概ね **≥ 47.4.4**、古い版は
+>   ≥47.2.20）。本プロジェクトの `forge_version=47.4.10` は充足。下げないこと。
+> - Java は **17 固定**（MC1.20.1/Forge47 共通。`CLAUDE.md` §1）。WoM/Epic Fight も同じ。
+> - 正しいペアは導入環境の**起動ログ**で確定する（本実行環境では検証不可）。
+> - 本 Mod 側は `mandatory=false`＋`ModList.isLoaded` ガードのため、**両者の有無や
+>   版に関わらず examplemod 自体はロードできる**（連携機能だけが有効/無効になる）。
+
 ```gradle
 dependencies {
     compileOnly fg.deobf("curse.maven:weapons-of-miracles-<projectId>:<fileId>")
