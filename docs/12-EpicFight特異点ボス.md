@@ -138,6 +138,7 @@ WoM は Epic Fight アドオン（武器11・スキル27・防具4等／mc1.20.1
 > - 正しいペアは導入環境の**起動ログ**で確定する（本実行環境では検証不可）。
 > - 本 Mod 側は `mandatory=false`＋`ModList.isLoaded` ガードのため、**両者の有無や
 >   版に関わらず examplemod 自体はロードできる**（連携機能だけが有効/無効になる）。
+> - **→ 互換性を高める具体実装（版耐性＋一致ペア選定の手順）は STEP 2.6。**
 
 ```gradle
 dependencies {
@@ -154,23 +155,132 @@ dependencies {
     side="BOTH"
 ```
 
-WoM アイテムは **ID 参照のみ**（jar/アセットはコピーしない）:
+WoM アイテムは **ID 参照のみ**（jar/アセットはコピーしない）。版差・ミスマッチに
+強くするため、**複数候補ID＋Epic Fight 武器 capability の存在確認＋例外境界**で
+解決する（単純な単一ID版より互換性が高い）:
 
 ```java
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import java.util.List;
 
-public static Item womItemOr(String id, Item fallback) {
+/**
+ * WoM 武器を「論理名 → 版ごとに変わりうる複数候補ID」で解決する。
+ * - WoM 未導入 → fallback
+ * - どの候補IDも存在しない → fallback（版差吸収）
+ * - 存在するが Epic Fight 武器 capability を持たない/EF API 不一致 → fallback
+ *   （ムーブセットが付かない“見た目だけ”を避け、ミスマッチでも安全に縮退）
+ */
+public static Item womWeaponOr(List<String> candidateIds, Item fallback) {
     if (!ModList.get().isLoaded("weaponsofmiracles")) return fallback;
-    Item it = ForgeRegistries.ITEMS.getValue(new ResourceLocation("weaponsofmiracles", id));
-    return it != null ? it : fallback;          // 版差で id が変わりうる → 必ずガード
+    for (String id : candidateIds) {
+        Item it = ForgeRegistries.ITEMS.getValue(new ResourceLocation("weaponsofmiracles", id));
+        if (it != null && hasEpicFightWeaponCap(new ItemStack(it))) return it;
+    }
+    return fallback;
+}
+
+/**
+ * Epic Fight の武器 capability 有無を“防御的に”判定する。
+ * EF の正確な取得 API は版依存。ここでは <b>例外境界</b>が肝で、API が変わって
+ * NoSuchMethodError/NoClassDefFoundError/LinkageError 等が出ても連携機能を
+ * 黙って無効化し、本 Mod を巻き込んで落とさない（＝ミスマッチ耐性）。
+ */
+private static boolean hasEpicFightWeaponCap(ItemStack stack) {
+    try {
+        // 版ごとに正典 API を確認して 1 行差し替える（例: EpicFightCapabilities
+        //   .getItemStackCapability(stack) が weapon capability を返すか）。
+        // 不明な版では「false（=fallback）」に倒すのが安全。
+        return EpicFightCompatProbe.itemHasWeaponCapability(stack);
+    } catch (Throwable ignored) {       // LinkageError 含む全例外を境界で握る
+        return false;
+    }
 }
 ```
 
-> WoM の正確なアイテム登録名は**版ごとに逆コンパイル/`/give` 補完で確認**すること。
-> 本書の `solar` 等は代表例。存在しなければ自動でバニラ武器へ降格する。
+> **互換性のポイント**: 「存在チェックだけ」でなく **capability 確認＋例外境界**を
+> 入れることで、EF と WoM がミスマッチ（IDはあるが EF API が食い違う）でも
+> *見た目だけ装備して挙動が壊れる*事故を避け、自動でバニラ武器へ降格する。
+> 候補IDは版で変わるため**論理名→複数候補**で持つ（下記 STEP 5.5）。
+
+### STEP 2.6 — 互換性を高める実装方針（最重要・本書の核）
+
+> **前提（正直に）**: Epic Fight と WoM は他者の Mod であり、両者“間”の互換性
+> そのものは本 Mod から改変できない。**我々が高められるのは
+> (1) 連携コードの版耐性（広い EF/WoM 版で壊れず縮退）と
+> (2) 一致ペアを確実に選ぶ手順**の二つ。以下を必ず実施する。
+
+**(1) 一致ペアの決定的な選定（オフラインで可能・唯一の本質的対策）**
+
+WoM は Epic Fight のハード依存アドオン。WoM 各ビルドが要求する Epic Fight
+バージョンは **WoM jar の `mods.toml`** に書いてある。ゲーム起動前に読める:
+
+```bash
+# WoM が要求する Epic Fight の versionRange を確認
+unzip -p WeaponsOfMiracles-*.jar META-INF/mods.toml \
+  | grep -A4 'modId[ ]*=[ ]*"epicfight"'
+
+# Epic Fight が要求する Forge 下限を確認（本構成 47.4.10 が範囲内か）
+unzip -p epicfight-forge-*.jar META-INF/mods.toml \
+  | grep -A3 'modId[ ]*=[ ]*"forge"'
+```
+
+→ 表示された Epic Fight `versionRange` に**収まる Epic Fight ビルドを入れる**。
+これで EF↔WoM は適合する（憶測でなく WoM 自身の宣言に従う）。
+
+**(2) 防御的 Epic Fight API 利用（版耐性）**
+
+- すべての EF 呼び出しは **境界で `try { ... } catch (Throwable)`**。API 変更時は
+  連携機能だけ自動 OFF（本 Mod・ボスは生存＝§1 のバニラ実装で戦い続ける）。
+- **安定エントリを優先**: datapack capabilities（`docs/11`）と
+  `EpicFightCapabilities.getEntityPatch()` 系。深い内部クラスの直参照は最小化。
+- EF 連携は**独立ファイル**に隔離（`src/` に置かない＝§0）。EF 不在/不一致で
+  コンパイル・ロードのどちらも本体に波及させない。
+
+**(3) ミスマッチ隔離（起動時セルフチェック）**
+
+```java
+@Mod.EventBusSubscriber(modid = ExampleMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+public final class EpicFightCompat {
+    public static boolean ENABLED = false;
+
+    @SubscribeEvent
+    public static void onCommonSetup(FMLCommonSetupEvent e) {
+        boolean ef  = ModList.get().isLoaded("epicfight");
+        boolean wom = ModList.get().isLoaded("weaponsofmiracles");
+        if (!ef) { log("Epic Fight 未導入 → 連携OFF（ボスはバニラ実装で動作）"); return; }
+        try {
+            // 連携に必須の EF クラス/メソッドが“この版に”あるか自己確認。
+            Class.forName("yesman.epicfight.world.capabilities.EpicFightCapabilities");
+            ENABLED = true;
+            log("Epic Fight 連携 ON" + (wom ? " / WoM 連携 ON" : " / WoM なし=バニラ武器"));
+        } catch (Throwable t) {     // 版不一致 → 連携OFF（クラッシュさせない）
+            ENABLED = false;
+            log("Epic Fight API 不一致 → 連携OFF: " + t);
+        }
+    }
+}
+```
+
+`SingularityPatch` 登録（§3 STEP6）や CombatBehaviors（§4-B）は
+`if (!EpicFightCompat.ENABLED) return;` を先頭に置く。これで **EF/WoM が
+どの版でも・ミスマッチでも、最悪「連携無効・ボスはバニラ実装で正常稼働」** に収束する。
+
+**(4) 互換性マトリクス雛形（選定結果を必ず記録）**
+
+| 役割 | 採用ビルド | 要求（jar mods.toml より） | 確認 |
+|---|---|---|---|
+| Minecraft | 1.20.1 | — | ✅ |
+| Forge | 47.4.10 | Epic Fight 要求 ≥ ____ | ☐ |
+| Epic Fight | epicfight-forge-__.__.__-1.20.1 | WoM 要求 versionRange ____ に収まる | ☐ |
+| Weapons of Miracles | WeaponsOfMiracles-__.__ | EF 上記に一致 | ☐ |
+| Java | 17（toolchain 固定） | 共通 | ✅ |
+
+> 本実行環境では起動検証不可（ネット遮断・headless）。上記 `unzip` 手順は
+> **オフラインで実施可能**＝最も確実な互換確認。実機ログでの最終確認は別環境で。
 
 ---
 
@@ -309,6 +419,10 @@ static boolean withinStage(SingularityPatch p, int min) { return self(p).getSkil
 override し、`skillStage` ごとに WoM 武器へ差し替える。武器の Epic Fight
 ムーブセットは §3 の HumanoidMobPatch でそのまま流用される。
 
+**論理名 → 複数候補ID**で持ち、STEP 2.5 の `womWeaponOr`（capability 確認＋
+例外境界付き）で解決する。候補IDは WoM の版で変わるため**複数並べる**こと
+（実IDは STEP 2.6 の `unzip` か `/give weaponsofmiracles:` 補完で確認）:
+
 ```java
 // (Epic Fight + WoM 導入環境用。src の Singularity を継承して別 EntityType 登録、
 //  または stageWeaponFor を直接 override)
@@ -316,17 +430,21 @@ override し、`skillStage` ごとに WoM 武器へ差し替える。武器の E
 protected Item stageWeaponFor(int stage) {
     switch (stage) {
         case 0:  return ModItems.EXAMPLE_SWORD.get();              // 基本武器
-        case 1:  return womItemOr("solar",    Items.DIAMOND_SWORD);
-        case 2:  return womItemOr("satsujin", Items.NETHERITE_SWORD);
-        default: return womItemOr("antitheus", Items.NETHERITE_AXE); // 終盤武器
+        case 1:  return womWeaponOr(List.of("solar"),               Items.DIAMOND_SWORD);
+        case 2:  return womWeaponOr(List.of("satsujin", "satujin"), Items.NETHERITE_SWORD);
+        default: return womWeaponOr(List.of("antitheus"),           Items.NETHERITE_AXE);
     }
 }
 ```
 
+- **版耐性**: WoM 不在／候補ID全滅／capability 不一致のいずれでも
+  `womWeaponOr` が自動でバニラ武器へ降格 → **どの EF/WoM 版でもクラッシュしない**。
 - **WoM の27スキルは本物実行しない**（§4-A は実験的）。必要な「スキル相当効果」は
   §4-B の CombatBehaviors/カスタムアニメで再現し、§5 の段階ゲートに載せる。
-- WoM 不在時は `womItemOr` が自動でバニラ武器へ降格 → **クラッシュしない**。
-- 武器の capability（ムーブセット）は WoM 側が定義済み。本 Mod は**参照するだけ**。
+- 武器の capability（ムーブセット）は WoM 側が定義済み。本 Mod は**参照するだけ**
+  （アセット非コピー＝ライセンス遵守）。
+- 連携全体は §STEP 2.6 (3) の `EpicFightCompat.ENABLED` で囲み、ミスマッチ時は
+  連携 OFF・ボスは §1 のバニラ実装で正常稼働に収束させる。
 
 ---
 
@@ -369,7 +487,10 @@ Gradle ラッパ。
 - [ ] 行動選択層が段階ゲートされ `getCurrentAction()` で参照できる
 - [ ] スポーンエッグ・lang(en/ja)・64x64 テクスチャ・レンダラが揃っている
 - [ ] Epic Fight 連携は `docs/12` コード片のみ（`src/` 非依存・ビルド非破壊）
-- [ ] WoM は任意ソフト依存・ID参照・`ModList.isLoaded` ガード・不在で降格
+- [ ] WoM は任意ソフト依存・**複数候補ID**・capability 確認・**例外境界**・不在で降格
+- [ ] EF↔WoM の一致ペアを STEP 2.6 (1) の `unzip` で確定し、互換マトリクスを記録
+- [ ] 全 EF 呼び出しが `EpicFightCompat.ENABLED` ＋ `try/catch(Throwable)` 配下
+- [ ] ミスマッチ時に「連携OFF・ボスはバニラ実装で稼働」へ収束する設計
 - [ ] 27スキルの本物実行は実験的扱い、採用はフォールバック（§4-B）
 - [ ] 実機/ムーブセット/Skill 駆動は別環境で確認 or 未検証と明記
 
@@ -379,10 +500,12 @@ Gradle ラッパ。
 |---|---|
 | ビルドで Epic Fight クラスが見つからない | 連携コードを `src/` に置いた → `docs/12` のコード片に留める |
 | WoM 未導入でクラッシュ | `ModList.isLoaded` ガード未実施 / `mandatory=true` にした |
+| EF と WoM のミスマッチでクラッシュ | EF↔WoM 版不一致。STEP 2.6 (1) の `unzip` でペア確定。連携を `EpicFightCompat.ENABLED`＋`try/catch(Throwable)` で囲む |
+| EF 更新後に NoSuchMethodError 等 | 深い内部 API 直参照。安定エントリ＋例外境界へ（STEP 2.6 (2)）。連携OFF で本体は生存 |
 | `EntityPatchRegistryEvent` が呼ばれない | FORGE バスに登録した → **MOD バス**で登録（§3） |
 | スキンが紫黒 | `textures/entity/singularity.png` 不在/名前不一致 |
 | 段が上がらない | 起点未実装は仕様（§1）。`tickStageProgression()` か コマンドで駆動 |
-| WoM 武器が出ない | その版に当該登録名が無い → 逆コンパイルで確認 / 自動降格中 |
+| WoM 武器が出ない/見た目だけ動かない | 版で登録名変化 or capability 不一致 → `womWeaponOr` の複数候補＋capability 確認で自動降格中（STEP 2.5） |
 
 ## 10. 付録: なぜ機械学習（模倣学習）を採らないか
 
