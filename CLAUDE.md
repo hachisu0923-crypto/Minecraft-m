@@ -11,7 +11,7 @@
 - mod id = `examplemod`（変更時の手順は §6）
 - 言語: Java 17 / ビルド: Gradle (ForgeGradle 6.0)
 - 例として「アイテム1つ・ブロック1つ・クリエイティブタブ1つ」が登録済み
-- 詳細トピックは `docs/01`〜`docs/09` に分割。迷ったら該当 docs を開く
+- 詳細トピックは `docs/01`〜`docs/10`、Epic Fight 関連は `docs/epicfight/` に分割。迷ったら該当 docs を開く
 
 ## 1. 絶対に守るルール（違反するとビルド/起動が壊れる）
 
@@ -59,8 +59,8 @@ ForgeGradle は初回ビルドで `maven.minecraftforge.net` と `libraries.mine
 - アイテム追加 → `docs/04-アイテム追加.md` の手順。コピー元は `src/.../registry/ModItems.java`
 - ブロック追加 → `docs/05-ブロック追加.md`。コピー元は `src/.../registry/ModBlocks.java`
 - 新カテゴリ（エンチャント/エンティティ等）→ `docs/03-Modの基本.md` の DeferredRegister 節
-- 武器に Epic Fight 戦闘スタイルを付ける → `docs/11-EpicFight戦闘スタイル.md`（datapack 方式）
-- プレイヤー型強敵ボス（段階的に強くなる／Epic Fight・WoM のプレイヤー行動転用）→ `docs/12-EpicFight特異点ボス.md`（API 方式）
+- 武器に Epic Fight 戦闘スタイルを付ける → `docs/epicfight/11-EpicFight戦闘スタイル.md`（datapack 方式）
+- プレイヤー型強敵ボス（段階的に強くなる／Epic Fight・WoM のプレイヤー行動転用）→ `docs/epicfight/12-EpicFight特異点ボス.md`（API 方式）
 - 汎用レシピ（何を足す場合でも）→ `docs/09-機能追加ワークフロー.md`
 - バグ/エラーが出た → `docs/07`（症状→原因 早見表）→ 解決しなければ `docs/10-バグとエラー対応.md`（切り分け・調査・修正・報告の手順書）
 

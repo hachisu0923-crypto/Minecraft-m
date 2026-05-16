@@ -54,7 +54,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * <p>Epic Fight / Weapons of Miracles 連携（プレイヤー行動の転用・武器ムーブセットの
  * 段階解禁・行動選択層の Epic Fight スキルへのマッピング）は本体に依存を持たせず
- * {@code docs/12-EpicFight特異点ボス.md} にコード片として記載する。</p>
+ * {@code docs/epicfight/12-EpicFight特異点ボス.md} にコード片として記載する。</p>
  */
 public class Singularity extends Monster {
 
@@ -125,7 +125,7 @@ public class Singularity extends Monster {
     /**
      * 段階を進める「起点」を実装する拡張ポイント。<b>既定は何もしない（トリガ非依存）。</b>
      * 例: HP しきい値・経過時間・撃破数・独自条件で {@link #advanceStage()} を呼ぶ実装に
-     * 差し替える。起点の設計指針と Epic Fight 連携は {@code docs/12} を参照。
+     * 差し替える。起点の設計指針と Epic Fight 連携は {@code docs/epicfight/12} を参照。
      */
     protected void tickStageProgression() {
     }
@@ -150,7 +150,7 @@ public class Singularity extends Monster {
         }
     }
 
-    // ---- 段階 → 武器テーブル（docs/12 で Weapons of Miracles の武器IDへ差替える差込口）----
+    // ---- 段階 → 武器テーブル（docs/epicfight/12 で Weapons of Miracles の武器IDへ差替える差込口）----
 
     private void applyStageWeapon(int stage) {
         this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(this.stageWeaponFor(stage)));
@@ -159,7 +159,7 @@ public class Singularity extends Monster {
 
     /**
      * {@code skillStage} ごとの装備武器。<b>override 用の差込口。</b>
-     * 本体はバニラ武器でプレースホルダ。docs/12 では Weapons of Miracles の
+     * 本体はバニラ武器でプレースホルダ。docs/epicfight/12 では Weapons of Miracles の
      * 武器（Solar / Satsujin / Antitheus 等）を {@code ModList.isLoaded} ガード付きで
      * ID 参照して返すよう override する（WoM 不在時はここへフォールバック）。
      */

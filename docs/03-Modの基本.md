@@ -90,7 +90,7 @@ public static final RegistryObject<Item> EXAMPLE_ITEM =
 
 実例: `registry/ModEntities.java`（登録）/ `ExampleMod#onEntityAttributeCreation`
 （属性）/ `client/ClientSetup.java`（レンダラ）/ `entity/Singularity.java`（本体）。
-詳細・設計は `docs/12-EpicFight特異点ボス.md`。`LivingEntity` 系はスポーンエッグや
+詳細・設計は `docs/epicfight/12-EpicFight特異点ボス.md`。`LivingEntity` 系はスポーンエッグや
 `SpawnPlacements`（自然湧き）も別途必要になる。
 
 ## マッピングについて（任意）

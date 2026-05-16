@@ -4,7 +4,7 @@
 システムとして実装する。さらに Epic Fight / **Weapons of Miracles (WoM)** の
 プレイヤー行動・武器ムーブセットを敵に転用する手順を示す。
 
-本書は **API 主軸**（コード片中心）。`docs/11`（datapack 方式）の上位編に当たる。
+本書は **API 主軸**（コード片中心）。`docs/epicfight/11`（datapack 方式）の上位編に当たる。
 
 ---
 
@@ -19,7 +19,7 @@
 - **本実行環境ではビルド/実機/描画/ムーブセット/Skill 駆動は検証不可**
   （Cursemaven / Forge maven がネットワークポリシーで遮断・headless）。
   保証できるのは「`src/` のバニラ実装の静的正しさ」まで。Epic Fight / WoM 連携部は
-  **本書のコード片**であり、ビルドを壊さないため `src/` には入れていない（`docs/11` 同方針）。
+  **本書のコード片**であり、ビルドを壊さないため `src/` には入れていない（`docs/epicfight/11` 同方針）。
 - WoM 連携は **任意ソフト依存**・**レジストリID参照のみ**（アセット非コピー＝
   ライセンス遵守）・**WoM 不在でもボスは動作**（バニラ武器へ自動フォールバック）。
 
@@ -101,7 +101,7 @@ Epic Fight のスキル/モーションへマッピングする**のが §5。
 > 壊れるため）。下記は導入環境で適用するコード片。
 
 ### STEP 2.1 — Epic Fight を `compileOnly` 依存に
-`build.gradle`（`docs/11 §6` と同じ Cursemaven を使用）:
+`build.gradle`（`docs/epicfight/11 §6` と同じ Cursemaven を使用）:
 
 ```gradle
 repositories {
@@ -113,7 +113,7 @@ dependencies {
 }
 ```
 
-`mods.toml` に **任意ソフト依存**（`docs/11 §5` と同形・`mandatory=false`）:
+`mods.toml` に **任意ソフト依存**（`docs/epicfight/11 §5` と同形・`mandatory=false`）:
 
 ```toml
 [[dependencies.examplemod]]
@@ -235,7 +235,7 @@ unzip -p epicfight-forge-*.jar META-INF/mods.toml \
 
 - すべての EF 呼び出しは **境界で `try { ... } catch (Throwable)`**。API 変更時は
   連携機能だけ自動 OFF（本 Mod・ボスは生存＝§1 のバニラ実装で戦い続ける）。
-- **安定エントリを優先**: datapack capabilities（`docs/11`）と
+- **安定エントリを優先**: datapack capabilities（`docs/epicfight/11`）と
   `EpicFightCapabilities.getEntityPatch()` 系。深い内部クラスの直参照は最小化。
 - EF 連携は**独立ファイル**に隔離（`src/` に置かない＝§0）。EF 不在/不一致で
   コンパイル・ロードのどちらも本体に波及させない。
@@ -319,7 +319,7 @@ public class SingularityPatch extends HumanoidMobPatch<Singularity> {
 }
 ```
 
-EntityPatch の登録は **MOD バス**・`@Mod.EventBusSubscriber(bus = MOD)`（`docs/11 §9`）:
+EntityPatch の登録は **MOD バス**・`@Mod.EventBusSubscriber(bus = MOD)`（`docs/epicfight/11 §9`）:
 
 ```java
 @Mod.EventBusSubscriber(modid = ExampleMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -486,7 +486,7 @@ Gradle ラッパ。
 - [ ] `skillStage` API（get/set/advance）と拡張ポイント `tickStageProgression()` がある
 - [ ] 行動選択層が段階ゲートされ `getCurrentAction()` で参照できる
 - [ ] スポーンエッグ・lang(en/ja)・64x64 テクスチャ・レンダラが揃っている
-- [ ] Epic Fight 連携は `docs/12` コード片のみ（`src/` 非依存・ビルド非破壊）
+- [ ] Epic Fight 連携は `docs/epicfight/12` コード片のみ（`src/` 非依存・ビルド非破壊）
 - [ ] WoM は任意ソフト依存・**複数候補ID**・capability 確認・**例外境界**・不在で降格
 - [ ] EF↔WoM の一致ペアを STEP 2.6 (1) の `unzip` で確定し、互換マトリクスを記録
 - [ ] 全 EF 呼び出しが `EpicFightCompat.ENABLED` ＋ `try/catch(Throwable)` 配下
@@ -498,7 +498,7 @@ Gradle ラッパ。
 
 | 症状 | 原因 |
 |---|---|
-| ビルドで Epic Fight クラスが見つからない | 連携コードを `src/` に置いた → `docs/12` のコード片に留める |
+| ビルドで Epic Fight クラスが見つからない | 連携コードを `src/` に置いた → `docs/epicfight/12` のコード片に留める |
 | WoM 未導入でクラッシュ | `ModList.isLoaded` ガード未実施 / `mandatory=true` にした |
 | EF と WoM のミスマッチでクラッシュ | EF↔WoM 版不一致。STEP 2.6 (1) の `unzip` でペア確定。連携を `EpicFightCompat.ENABLED`＋`try/catch(Throwable)` で囲む |
 | EF 更新後に NoSuchMethodError 等 | 深い内部 API 直参照。安定エントリ＋例外境界へ（STEP 2.6 (2)）。連携OFF で本体は生存 |
@@ -518,9 +518,9 @@ Gradle ラッパ。
 
 - Epic Fight Wiki: `https://epicfight-docs.readthedocs.io/`
   - API（独自パッチ/スキル/アニメ。`EntityPatchRegistryEvent` は **MOD バス**登録）
-  - Weapon Type Editor / Item Capability（`docs/11` と共通）
+  - Weapon Type Editor / Item Capability（`docs/epicfight/11` と共通）
 - Weapons of Miracles: CurseForge / Modrinth の配布ページ（武器登録名は版で確認）
-- 関連: `docs/11`（datapack 方式の戦闘スタイル割当）, `docs/09`（汎用追加手順）,
+- 関連: `docs/epicfight/11`（datapack 方式の戦闘スタイル割当）, `docs/09`（汎用追加手順）,
   `docs/10`（バグ/未検証の扱い）
 
 本書の `src/` 実装は 1.20.1 標準 API のみで静的検証済み。Epic Fight / WoM 連携部は

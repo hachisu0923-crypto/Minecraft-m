@@ -32,13 +32,13 @@ Epic Fight は **capability** で「対象に戦闘データを後付け」す�
 | capability | 付与対象 | 何を持つか | datapack パス |
 |---|---|---|---|
 | **Item capability** | アイテム | weapon type（ムーブセット）・属性・コライダー・スタイル | `data/<modid>/capabilities/weapons/<登録名>.json` |
-| **Entity patch** | エンティティ | armature（骨格）・LivingMotion・スキル・combat behavior | API（`docs/12`）/ Mob Capabilities datapack |
+| **Entity patch** | エンティティ | armature（骨格）・LivingMotion・スキル・combat behavior | API（`docs/epicfight/12`）/ Mob Capabilities datapack |
 
 本書（datapack 方式）が触るのは **Item capability** のみ。武器JSONは
 「このアイテムを戦闘モードで持ったらどの weapon type で戦うか」を宣言するだけで、
 ムーブセットの中身（コンボ/アニメ）は **weapon type 側**が持つ。
 API 側 (`LivingEntityPatch` を `EpicFightCapabilities.getEntityPatch()` で取得して
-操作) は上級編 `docs/12` の領域。
+操作) は上級編 `docs/epicfight/12` の領域。
 
 ### 0.3 Armature とアニメーション（理解として）
 
@@ -85,7 +85,7 @@ Epic Fight の「スキル」は weapon capability とは別レイヤー。プ�
 ゲージやチャージ攻撃・受け（ガード）・回避として発動する。weapon type には
 **passive skill** やチャージ攻撃が紐づくことがある。datapack の武器JSONだけでは
 独自スキルは作れない（API 領域）。**敵にスキル/プレイヤー行動を転用する**のは
-`docs/12-EpicFight特異点ボス.md`（API 方式・実験的）を参照。
+`docs/epicfight/12-EpicFight特異点ボス.md`（API 方式・実験的）を参照。
 
 ### 0.7 本書のスコープと確証レベル（正直な線引き）
 
@@ -281,7 +281,7 @@ Epic Fight Wiki: `https://epicfight-docs.readthedocs.io/`（正典。版で内�
 | `Guides/Weapons/page2/`（Weapon Type Editor） | 組込 weapon type 一覧・独自 weapon type 定義（§0.4/§3） |
 | `Guides/Weapons/page3/`（Custom Trails） | スタイル別の残光トレイル（§0.4） |
 | `Guides/Entities/page1/`（Custom entity datapack） | 敵を Epic Fight 化（armature/patch・§0.2） |
-| `Guides/Entities/page2/`（Mob Capabilities Editor） | mob の capability 編集（`docs/12` 関連） |
+| `Guides/Entities/page2/`（Mob Capabilities Editor） | mob の capability 編集（`docs/epicfight/12` 関連） |
 | `API/Starting/`（Getting started） | `EpicFightCapabilities.getEntityPatch()` 等の API 入口 |
 
 - API（独自スキル/ムーブセット/アニメーションを自作する上級者向け）。Forge 1.20.1 は
@@ -292,4 +292,4 @@ Epic Fight Wiki: `https://epicfight-docs.readthedocs.io/`（正典。版で内�
 組込スタイルの増減は **Epic Fight の版**で変わるため、上記 wiki を最終的な根拠とすること。
 
 > 敵にプレイヤーの戦闘行動・武器ムーブセットを転用し「段階的に強くなるボス」を
-> 作る上級編は `docs/12-EpicFight特異点ボス.md`（API 方式）を参照。
+> 作る上級編は `docs/epicfight/12-EpicFight特異点ボス.md`（API 方式）を参照。

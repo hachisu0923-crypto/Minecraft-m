@@ -19,7 +19,7 @@ public final class ModItems {
     public static final RegistryObject<Item> EXAMPLE_ITEM =
             REGISTER.register("example_item", () -> new Item(new Item.Properties()));
 
-    // 武器の例。Epic Fight 戦闘スタイルの割り当て先になる（docs/11 参照）。
+    // 武器の例。Epic Fight 戦闘スタイルの割り当て先になる（docs/epicfight/11 参照）。
     // SwordItem(Tier, 攻撃力補正, 攻撃速度補正, Properties)。1.20.1 のシグネチャ。
     public static final RegistryObject<Item> EXAMPLE_SWORD =
             REGISTER.register("example_sword",
