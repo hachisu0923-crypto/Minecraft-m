@@ -197,6 +197,9 @@ src/main/resources/data/<modid>/capabilities/weapons/<item登録名>.json
 
 その Mod が読み込まれていない環境では無効になる点に注意（soft-dependency 化推奨 → §5）。
 
+> 具体例として **Weapons of Miracles** を本 Mod／ボスへ連携する手順・版一致・
+> 版耐性は `docs/epicfight/13-WeaponsOfMiracles連携.md` を参照。
+
 ## 4. 検証
 
 datapack JSON は既存の検証パイプラインでそのままチェックできる:

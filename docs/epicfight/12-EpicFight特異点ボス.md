@@ -125,8 +125,10 @@ dependencies {
 ```
 
 ### STEP 2.5 — Weapons of Miracles も任意ソフト依存に
-WoM は Epic Fight アドオン（武器11・スキル27・防具4等／mc1.20.1-forge）。
-**もう一段の任意ソフト依存**として追加（不在でもボスは動く）:
+WoM は Epic Fight アドオン（mc1.20.1-forge）。
+**もう一段の任意ソフト依存**として追加（不在でもボスは動く）。
+**WoM 固有の詳細（版一致手順・版耐性・武器カタログ・ライセンス）の正典は
+`docs/epicfight/13-WeaponsOfMiracles連携.md`。** 本節は §3〜§5 と繋ぐ要点のみ:
 
 > **互換性（最重要・実導入前に必ず確認）**
 > - **Epic Fight と WoM は「対応する版同士をペアで」揃える。** WoM は Epic Fight の
